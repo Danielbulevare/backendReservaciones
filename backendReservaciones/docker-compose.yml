@@ -1,0 +1,12 @@
+services:
+  reservations_db:
+    container_name: reservations_db
+    image: mysql:9.1.0
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+    volumes:
+      - mysql-data-reservations:/var/lib/mysql
+volumes:
+  mysql-data-reservations:
