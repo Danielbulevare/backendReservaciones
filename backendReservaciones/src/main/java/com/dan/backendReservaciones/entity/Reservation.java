@@ -39,11 +39,11 @@ public class Reservation {
 	@Column(name = "status", nullable = false, columnDefinition = "ENUM('RESERVADO', 'CANCELADO') DEFAULT 'RESERVADO'")
 	private Status status;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "fk_id_user", referencedColumnName = "user_id", nullable = false)
 	private User user;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "fk_id_board", referencedColumnName = "board_id", nullable = false)
 	private Board board;
 }
