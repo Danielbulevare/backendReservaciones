@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dan.backendReservaciones.entity.User;
+import com.dan.backendReservaciones.projection.classbased.UserDataDTO;
+import com.dan.backendReservaciones.projection.interfacebased.closed.UserInterfaceClosedView;
 import com.dan.backendReservaciones.service.UserService;
 
 import jakarta.validation.Valid;
@@ -22,12 +24,12 @@ public class UserController {
 	UserService userService;
 	
 	@PostMapping("/registerUser")
-	public User registerUser(@Valid @RequestBody User user) {
+	public UserDataDTO registerUser(@Valid @RequestBody User user) {
 		return userService.registerUser(user);
 	}
 	
 	@GetMapping("/findByUserId/{id}")
-	public Optional<User> findByUserId(@PathVariable Long id){
+	public Optional<UserInterfaceClosedView> findByUserId(@PathVariable Long id){
 		return userService.findByUserId(id);
 	}
 

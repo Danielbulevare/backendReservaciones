@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dan.backendReservaciones.entity.Reservation;
 import com.dan.backendReservaciones.entity.User;
+import com.dan.backendReservaciones.projection.classbased.ReservationDataDTO;
+import com.dan.backendReservaciones.projection.interfacebased.closed.ReservationInterfaceClosedView;
 import com.dan.backendReservaciones.service.ReservationService;
 
 @RestController
@@ -23,12 +25,12 @@ public class ReservationController {
 	ReservationService reservationService;
 	
 	@PostMapping("/reserve")
-	public Optional<Reservation> reserve(@RequestBody Reservation reservation){
+	public Optional<ReservationDataDTO> reserve(@RequestBody Reservation reservation){
 		return reservationService.reserve(reservation);
 	}
 	
 	@GetMapping("/reservationHistory")
-	public List<Reservation> reservationHistory(@RequestBody User user){
+	public List<ReservationInterfaceClosedView> reservationHistory(@RequestBody User user){
 		return reservationService.reservationHistory(user);
 	}
 	

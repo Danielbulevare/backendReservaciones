@@ -2,7 +2,6 @@ package com.dan.backendReservaciones.service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,8 @@ import com.dan.backendReservaciones.entity.Board;
 import com.dan.backendReservaciones.entity.Reservation;
 import com.dan.backendReservaciones.entity.User;
 import com.dan.backendReservaciones.enumeration.Status;
+import com.dan.backendReservaciones.projection.classbased.ReservationDataDTO;
+import com.dan.backendReservaciones.projection.interfacebased.closed.ReservationInterfaceClosedView;
 import com.dan.backendReservaciones.repository.BoardRepository;
 import com.dan.backendReservaciones.repository.ReservationRepository;
 
@@ -27,7 +28,7 @@ public class ReservationServiceImplementation implements ReservationService {
 
 	@Override
 	@Transactional
-	public Optional<Reservation> reserve(Reservation reservation) {
+	public Optional<ReservationDataDTO> reserve(Reservation reservation) {
 		LocalDate currentDate = LocalDate.now();
 
 		// Si la fecha de reservación es menor o igual a la fecha actual
@@ -62,6 +63,11 @@ public class ReservationServiceImplementation implements ReservationService {
 		// Guarda la reservación insertada
 		Optional<Reservation> reservationCreated = Optional.ofNullable(reservationRepository.save(reservation));
 
+		Optional<ReservationDataDTO> reservationDataDTO = Optional
+				.ofNullable(new ReservationDataDTO(reservationCreated.get().getReservationId(),
+						reservationCreated.get().getReservationDate(), reservationCreated.get().getStatus(),
+						reservationCreated.get().getUser(), reservationCreated.get().getBoard()));
+
 		LocalDate dateTomorrow = currentDate.plusDays(1);
 
 		// Si la fecha de reservación es mañana
@@ -71,11 +77,11 @@ public class ReservationServiceImplementation implements ReservationService {
 		boardToReserve.setBlockedByUser(null); // Desbloquea la mesa
 		boardRepository.save(boardToReserve); // Actualiza la mesa
 
-		return reservationCreated;
+		return reservationDataDTO;
 	}
 
 	@Override
-	public List<Reservation> reservationHistory(User user) {
+	public List<ReservationInterfaceClosedView> reservationHistory(User user) {
 		return reservationRepository.findByUser(user);
 	}
 
@@ -99,15 +105,15 @@ public class ReservationServiceImplementation implements ReservationService {
 				|| reservationDB.get().getReservationDate().isEqual(currentDate))
 			return false;
 
-		reservationDB.get().setStatus(Status.CANCELADO); //Cancela la reservación
-		
+		reservationDB.get().setStatus(Status.CANCELADO); // Cancela la reservación
+
 		LocalDate dateTomorrow = currentDate.plusDays(1);
 
 		// Si la fecha de reservación es mañana
 		if (reservationDB.get().getReservationDate().isEqual(dateTomorrow)) {
 			Board boardDB = boardRepository.findById(reservationDB.get().getBoard().getBoardId()).get();
-			boardDB.setIsReserved(false); //Cancela la reservación
-		}			
+			boardDB.setIsReserved(false); // Cancela la reservación
+		}
 
 		return true;
 	}

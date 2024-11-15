@@ -5,9 +5,11 @@ import java.util.Optional;
 
 import com.dan.backendReservaciones.entity.Reservation;
 import com.dan.backendReservaciones.entity.User;
+import com.dan.backendReservaciones.projection.classbased.ReservationDataDTO;
+import com.dan.backendReservaciones.projection.interfacebased.closed.ReservationInterfaceClosedView;
 
 public interface ReservationService {
-	Optional<Reservation> reserve(Reservation reservation);
-	List<Reservation> reservationHistory(User user);
+	Optional<ReservationDataDTO> reserve(Reservation reservation);
+	List<ReservationInterfaceClosedView> reservationHistory(User user);
 	boolean cancelReservation(Long reservationId);
 }
