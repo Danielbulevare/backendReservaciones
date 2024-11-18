@@ -39,6 +39,6 @@ public class Board {
 
 	@Email(message = "Debes asignar un correo válido.")
 	@Column(name = "blocked_by_user", nullable = true, unique = true)
-	@Length(max = 50)
+	@Length(max = 50, message = "El correo supera los 50 caracteres.")
 	private String blockedByUser;
 }

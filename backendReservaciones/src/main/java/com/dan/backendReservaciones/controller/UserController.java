@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dan.backendReservaciones.entity.User;
+import com.dan.backendReservaciones.error.EmailAlreadyExistsException;
 import com.dan.backendReservaciones.projection.classbased.UserDataDTO;
 import com.dan.backendReservaciones.projection.interfacebased.closed.UserInterfaceClosedView;
 import com.dan.backendReservaciones.service.UserService;
@@ -24,7 +25,7 @@ public class UserController {
 	UserService userService;
 	
 	@PostMapping("/registerUser")
-	public UserDataDTO registerUser(@Valid @RequestBody User user) {
+	public UserDataDTO registerUser(@Valid @RequestBody User user) throws EmailAlreadyExistsException{
 		return userService.registerUser(user);
 	}
 	

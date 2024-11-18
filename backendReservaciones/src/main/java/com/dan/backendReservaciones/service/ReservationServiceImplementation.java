@@ -11,10 +11,12 @@ import com.dan.backendReservaciones.entity.Board;
 import com.dan.backendReservaciones.entity.Reservation;
 import com.dan.backendReservaciones.entity.User;
 import com.dan.backendReservaciones.enumeration.Status;
+import com.dan.backendReservaciones.error.RecordNotFoundException;
 import com.dan.backendReservaciones.projection.classbased.ReservationDataDTO;
 import com.dan.backendReservaciones.projection.interfacebased.closed.ReservationInterfaceClosedView;
 import com.dan.backendReservaciones.repository.BoardRepository;
 import com.dan.backendReservaciones.repository.ReservationRepository;
+import com.dan.backendReservaciones.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -26,9 +28,26 @@ public class ReservationServiceImplementation implements ReservationService {
 	@Autowired
 	BoardRepository boardRepository;
 
+	@Autowired
+	UserRepository userRepository;
+
 	@Override
 	@Transactional
-	public Optional<ReservationDataDTO> reserve(Reservation reservation) {
+	public Optional<ReservationDataDTO> reserve(Reservation reservation) throws RecordNotFoundException {
+		Optional<User> userDB = userRepository.findById(reservation.getUser().getUserId());
+
+		// Si el usuario no existe
+		if (!userDB.isPresent()) {
+			throw new RecordNotFoundException("El usuario que está intentado reservar no existe.");
+		}
+
+		Optional<Board> boardToReserve = boardRepository.findById(reservation.getBoard().getBoardId());
+
+		// Si la mesa no existe
+		if (!boardToReserve.isPresent()) {
+			throw new RecordNotFoundException("La mesa que se está intentando reservar no existe.");
+		}
+
 		LocalDate currentDate = LocalDate.now();
 
 		// Si la fecha de reservación es menor o igual a la fecha actual
@@ -53,11 +72,9 @@ public class ReservationServiceImplementation implements ReservationService {
 				return Optional.empty();
 		}
 
-		Board boardToReserve = boardRepository.findById(reservation.getBoard().getBoardId()).get();
-
 		// Si el usuario que está reservando no es el usuario que apartó o bloqueó la
 		// mesa
-		if (reservation.getUser().getUserEmail() != boardToReserve.getBlockedByUser())
+		if (!reservation.getUser().getUserEmail().equals(boardToReserve.get().getBlockedByUser()))
 			return Optional.empty();
 
 		// Guarda la reservación insertada
@@ -72,27 +89,34 @@ public class ReservationServiceImplementation implements ReservationService {
 
 		// Si la fecha de reservación es mañana
 		if (reservation.getReservationDate().isEqual(dateTomorrow))
-			boardToReserve.setIsReserved(true); // Marcar la mesa como reservada
+			boardToReserve.get().setIsReserved(true); // Marcar la mesa como reservada
 
-		boardToReserve.setBlockedByUser(null); // Desbloquea la mesa
-		boardRepository.save(boardToReserve); // Actualiza la mesa
+		boardToReserve.get().setBlockedByUser(null); // Desbloquea la mesa
+		boardRepository.save(boardToReserve.get()); // Actualiza la mesa
 
 		return reservationDataDTO;
 	}
 
 	@Override
-	public List<ReservationInterfaceClosedView> reservationHistory(User user) {
+	public List<ReservationInterfaceClosedView> reservationHistory(User user) throws RecordNotFoundException {
+		Optional<User> userDB = userRepository.findById(user.getUserId());
+
+		// Si no existe el usuario
+		if (!userDB.isPresent()) {
+			throw new RecordNotFoundException("El usuario no existe.");
+		}
+
 		return reservationRepository.findByUser(user);
 	}
 
 	@Override
 	@Transactional
-	public boolean cancelReservation(Long reservationId) {
+	public boolean cancelReservation(Long reservationId) throws RecordNotFoundException {
 		Optional<Reservation> reservationDB = reservationRepository.findById(reservationId);
 
 		// Si no se encontró la reservación
-		if (reservationDB.isEmpty())
-			return false;
+		if (!reservationDB.isPresent())
+			throw new RecordNotFoundException("La reservación especificada no existe.");
 
 		// Si la reservación está cancelada
 		if (reservationDB.get().getStatus().equals(Status.CANCELADO))

@@ -3,9 +3,11 @@ package com.dan.backendReservaciones.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.dan.backendReservaciones.entity.User;
+import com.dan.backendReservaciones.error.EmailAlreadyExistsException;
 import com.dan.backendReservaciones.projection.classbased.UserDataDTO;
 import com.dan.backendReservaciones.projection.interfacebased.closed.UserInterfaceClosedView;
 import com.dan.backendReservaciones.repository.UserRepository;
@@ -16,13 +18,15 @@ public class UserServiceImplementation implements UserService {
 	UserRepository userRepository;
 
 	@Override
-	public UserDataDTO registerUser(User user) {
-		User userDB = userRepository.save(user);
-		UserDataDTO userDataDTO = new UserDataDTO(userDB.getUserId()
-				, userDB.getUserName()
-				, userDB.getUserEmail()
-				, userDB.getUserRole());
-		return userDataDTO;
+	public UserDataDTO registerUser(User user) throws EmailAlreadyExistsException {
+		try {
+			User userDB = userRepository.save(user);
+			UserDataDTO userDataDTO = new UserDataDTO(userDB.getUserId(), userDB.getUserName(), userDB.getUserEmail(),
+					userDB.getUserRole());
+			return userDataDTO;
+		} catch (DataIntegrityViolationException e) {
+			throw new EmailAlreadyExistsException("El correo electrónico ya existe.");
+		}
 	}
 
 	@Override
