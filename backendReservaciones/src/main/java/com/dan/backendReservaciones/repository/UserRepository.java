@@ -7,8 +7,11 @@ import org.springframework.stereotype.Repository;
 
 import com.dan.backendReservaciones.entity.User;
 import com.dan.backendReservaciones.projection.interfacebased.closed.UserInterfaceClosedView;
+import java.util.List;
+
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long>{
 	Optional<UserInterfaceClosedView> findByUserId(Long id);
+	Optional<User> findByUserEmail(String userEmail);
 }
