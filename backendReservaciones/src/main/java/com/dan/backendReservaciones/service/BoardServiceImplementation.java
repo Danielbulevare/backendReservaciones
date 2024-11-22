@@ -1,15 +1,20 @@
 package com.dan.backendReservaciones.service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.dan.backendReservaciones.entity.Board;
 import com.dan.backendReservaciones.error.EmailAlreadyExistsException;
 import com.dan.backendReservaciones.error.RecordNotFoundException;
+import com.dan.backendReservaciones.projection.interfacebased.closed.BoardInterfaceClosedView;
 import com.dan.backendReservaciones.repository.BoardRepository;
 
 @Service
@@ -61,6 +66,18 @@ public class BoardServiceImplementation implements BoardService {
 		boardDB.get().setBlockedByUser(null);
 
 		return boardRepository.save(boardDB.get()) != null;
+	}
+
+	@Override
+	public List<BoardInterfaceClosedView> boardsAvailable(int page, int records) {
+		Pageable pageable = PageRequest.of(page, records, Sort.by("boardId"));
+		return boardRepository.findByBlockedByUserAndIsReserved(null, false, pageable).toList();
+	}
+
+	@Override
+	public long totalPages(int records) {
+		Pageable pageable = PageRequest.of(0, records, Sort.by("boardId"));		
+		return boardRepository.findByBlockedByUserAndIsReserved(null, false, pageable).getTotalPages();
 	}
 
 }
