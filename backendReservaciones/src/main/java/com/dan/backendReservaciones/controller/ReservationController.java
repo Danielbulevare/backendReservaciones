@@ -35,7 +35,7 @@ public class ReservationController {
 		return reservationService.reserve(reservation);
 	}
 
-	@GetMapping("/reservationHistory")
+	@PostMapping("/reservationHistory")
 	public List<ReservationInterfaceClosedView> reservationHistory(@RequestBody User user)
 			throws RecordNotFoundException {
 		return reservationService.reservationHistory(user);
